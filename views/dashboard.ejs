@@ -1,0 +1,56 @@
+<%- include('partials/head') %>
+<main class="max-w-7xl mx-auto px-4 md:px-8 mt-4 md:mt-2 space-y-5">
+  <div class="grid md:grid-cols-5 gap-5">
+    <!-- Grafik -->
+    <section data-anim="card" class="bg-white rounded-[2rem] p-6 md:p-8 md:col-span-3">
+      <div class="flex justify-between items-center mb-4"><h2 class="text-lg md:text-2xl">Grafik per month <span class="text-sm text-brand-mid">(<%= year %>)</span></h2>
+        <div class="flex gap-2 text-sm"><a href="/?year=<%= year-1 %>" class="px-2 rounded bg-brand-bg"><i class="bi bi-chevron-left"></i></a><a href="/?year=<%= year+1 %>" class="px-2 rounded bg-brand-bg"><i class="bi bi-chevron-right"></i></a></div></div>
+      <div class="grid grid-cols-12 gap-1 md:gap-3">
+        <% chart.forEach(c => { %>
+        <div class="flex flex-col items-center" title="<%= c.short %>: masuk <%= rp(c.inn) %> / keluar <%= rp(c.out) %>">
+          <div class="h-[110px] flex items-end"><div data-anim="bar-up" class="w-3 md:w-7 rounded-t-full bg-brand-lime <%= c.inn ? '' : 'opacity-40' %>" style="height:<%= c.hIn %>px"></div></div>
+          <div class="h-[70px] flex items-start border-t border-brand/40 w-full justify-center"><div data-anim="bar-down" class="w-3 md:w-7 rounded-b-full bg-gray-300" style="height:<%= c.hOut %>px"></div></div>
+          <div class="text-[8px] md:text-sm mt-1"><%= c.short %></div>
+        </div>
+        <% }) %>
+      </div>
+    </section>
+    <!-- Summary -->
+    <section data-anim="card" class="bg-brand-lime rounded-[2rem] p-6 md:p-8 md:col-span-2 flex flex-col">
+      <span class="self-start bg-brand text-brand-lime text-xs rounded-full pl-4 pr-1 py-1 flex items-center gap-3">SUMMARY <span class="w-7 h-7 rounded-full bg-brand-lime text-brand grid place-items-center"><i class="bi bi-graph-up-arrow"></i></span></span>
+      <div class="mt-6 md:mt-8"><div class="text-sm md:text-lg">Saldo Kas</div><div class="text-4xl md:text-6xl font-medium"><span data-count="<%= saldo %>"><%= rpSpace(saldo) %></span></div></div>
+      <div class="grid grid-cols-2 gap-3 mt-auto pt-8">
+        <div class="bg-brand-soft rounded-2xl p-4"><div class="flex justify-between text-xs md:text-sm">Pemasukan <i class="bi bi-arrow-down-circle-fill"></i></div><div class="font-semibold mt-1 md:text-2xl"><span data-count="<%= tin %>"><%= rpSpace(tin) %></span></div></div>
+        <div class="bg-brand-soft rounded-2xl p-4"><div class="flex justify-between text-xs md:text-sm">Pengeluaran <i class="bi bi-arrow-up-circle-fill"></i></div><div class="font-semibold mt-1 md:text-2xl"><span data-count="<%= tout %>"><%= rpSpace(tout) %></span></div></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Rekap -->
+  <section data-anim="card" class="bg-white rounded-[2rem] p-3 pt-5 md:p-8">
+    <span class="inline-flex bg-brand text-brand-lime text-sm rounded-full pl-5 pr-1 py-1 items-center gap-6 mb-4">Rekap Pembayaran Kas <span class="w-9 h-9 rounded-full bg-brand-lime text-brand grid place-items-center"><i class="bi bi-graph-up-arrow"></i></span></span>
+    <div class="overflow-x-auto -mx-1 md:mx-0">
+      <table class="text-sm min-w-max w-full">
+        <thead>
+          <tr><th rowspan="2" class="hidden md:table-cell text-left pr-3 align-bottom">No</th>
+            <th rowspan="2" class="text-left pr-2 md:pr-6 align-bottom sticky left-0 bg-white text-[11px] md:text-sm">Mahasiswa</th>
+            <% periods.forEach(p => { %><th colspan="4" class="font-normal px-0 md:px-2 pb-1 text-[10px] md:text-sm"><%= p.short %></th><% }) %></tr>
+          <tr class="text-brand-mid"><% periods.forEach(p => { %><% [1,2,3,4].forEach(w => { %><th class="font-normal px-0 md:px-1 w-5 md:w-auto text-[8px] md:text-[10px]">M<%= w %></th><% }) %><% }) %></tr>
+        </thead>
+        <tbody>
+          <% students.forEach((s,i) => { %>
+          <tr data-anim="row" class="border-t border-gray-100">
+            <td class="hidden md:table-cell py-2 pr-3 text-brand-mid"><%= i+1 %></td>
+            <td class="py-1.5 md:py-2 pr-2 md:pr-6 text-brand-mid sticky left-0 bg-white text-[11px] md:text-sm border-r border-gray-100 md:border-0">
+              <div class="w-[88px] md:w-auto truncate md:whitespace-nowrap" title="<%= s.name %>"><%= s.name %></div></td>
+            <% periods.forEach(p => { %><% [1,2,3,4].forEach(w => { const ok = paid[s.id+'-'+p.year+'-'+p.month+'-'+w]; %>
+              <td class="px-0 md:px-1 w-5 md:w-auto text-center text-[10px] md:text-base"><% if (ok) { %><i class="bi bi-check-circle-fill text-brand"></i><% } else { %><i class="bi bi-circle-fill text-gray-300"></i><% } %></td>
+            <% }) %><% }) %>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+<%- include('partials/foot') %>

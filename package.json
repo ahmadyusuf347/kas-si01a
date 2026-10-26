@@ -1,0 +1,23 @@
+{
+  "name": "kas-si01a",
+  "version": "1.0.0",
+  "description": "Web App Uang Kas Kelas SI01A",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "seed": "node scripts/seed.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pdfkit": "^0.15.0",
+    "pg": "^8.13.0"
+  }
+}

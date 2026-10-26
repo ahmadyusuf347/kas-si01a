@@ -1,0 +1,70 @@
+<%- include('partials/head') %>
+<main class="max-w-4xl mx-auto px-4 md:px-8">
+  <div class="flex items-center justify-between py-5"><h1 class="text-4xl font-medium">Income</h1>
+    <button onclick="addDlg.showModal()" class="bg-brand text-brand-lime rounded-full px-6 py-3">Tambah <i class="bi bi-plus-lg ml-1"></i></button></div>
+  <section data-anim="card" class="bg-white rounded-[2rem] p-5 md:p-8">
+    <%- include('partials/filter', { ph: 'Cari nama' }) %>
+    <ul class="divide-y divide-gray-100">
+      <% rows.forEach(r => { %>
+      <li data-anim="row" class="flex items-center gap-3 py-3">
+        <span class="w-10 h-10 rounded-full bg-brand-lime grid place-items-center shrink-0"><i class="bi bi-arrow-down-left"></i></span>
+        <div class="min-w-0 flex-1"><div class="truncate"><%= r.name %></div><div class="text-xs text-brand-mid"><%= fmtDate(r.paid_date) %> · M<%= r.week %> <%= ['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'][r.period_month] %> <%= r.period_year %></div></div>
+        <b class="whitespace-nowrap">+ <%= rp(r.amount) %></b>
+        <button class="text-xl px-1" data-id="<%= r.id %>" data-date="<%= r.paid_date %>" data-amount="<%= r.amount %>" onclick="editIncome(this)" aria-label="Edit"><i class="bi bi-pencil-square"></i></button>
+        <form method="post" action="/income/<%= r.id %>/delete" onsubmit="return confirm('Hapus pemasukan ini?')"><button class="text-xl px-1" aria-label="Hapus"><i class="bi bi-trash3-fill"></i></button></form>
+      </li>
+      <% }) %>
+      <% if (!rows.length) { %><li class="py-8 text-center text-brand-mid">Belum ada data</li><% } %>
+    </ul>
+  </section>
+</main>
+
+<!-- Tambah -->
+<dialog id="addDlg" class="w-full md:w-[34rem] m-auto">
+  <form method="post" action="/income" class="bg-white rounded-[2rem] p-6 md:p-8 max-h-[92vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-5"><h2 class="text-2xl font-bold">Tambah Pemasukan</h2><button type="button" onclick="addDlg.close()" class="text-3xl"><i class="bi bi-x-lg"></i></button></div>
+    <label class="block mb-1">Mahasiswa</label>
+    <div class="relative mb-4">
+    <select name="student_id" id="stu" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl pl-5 pr-14 py-4 appearance-none">
+      <option value="">Mahasiswa</option>
+      <% students.forEach(s => { %><option value="<%= s.id %>"><%= s.name %> (<%= s.nim.slice(-3) %>)</option><% }) %>
+    </select>
+    <i class="bi bi-chevron-down absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-brand"></i></div>
+    <label class="block mb-1">Tanggal</label>
+    <input type="date" name="paid_date" value="<%= today %>" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-4 mb-4">
+    <div class="bg-gray-100 border border-gray-200 rounded-3xl p-4 space-y-3 mb-3 max-h-72 overflow-y-auto">
+      <% periods.forEach(p => { %>
+      <div><div class="mb-1"><%= p.label %> <%= p.year %></div>
+        <div class="grid grid-cols-4 gap-2">
+          <% [1,2,3,4].forEach(w => { %><label><input type="checkbox" name="weeks" value="<%= p.year %>-<%= p.month %>-<%= w %>" class="peer sr-only wk">
+            <span class="block text-center py-3 rounded-2xl border border-gray-200 bg-gray-50 cursor-pointer peer-checked:bg-brand peer-checked:text-brand-lime peer-disabled:bg-brand-lime peer-disabled:cursor-not-allowed">M <%= w %></span></label><% }) %>
+        </div></div>
+      <% }) %>
+    </div>
+    <p class="text-xs text-brand-mid mb-4">Hijau muda = sudah lunas. Hijau tua = dipilih. <b id="tot">Rp.0</b> (<%= rp(KAS) %>/minggu)</p>
+    <div class="grid grid-cols-2 gap-4"><button type="button" onclick="addDlg.close()" class="bg-brand text-brand-lime rounded-full py-4 text-xl">Batal</button><button class="bg-brand text-brand-lime rounded-full py-4 text-xl">Simpan</button></div>
+  </form>
+</dialog>
+
+<!-- Edit -->
+<dialog id="editDlg" class="w-full md:w-[26rem] m-auto">
+  <form method="post" id="editForm" class="bg-white rounded-[2rem] p-6 md:p-8">
+    <h2 class="text-2xl font-bold mb-5">Edit Pemasukan</h2>
+    <label class="block mb-1">Tanggal</label><input type="date" name="paid_date" id="eDate" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-3 mb-4">
+    <label class="block mb-1">Nominal</label><input type="number" min="1" name="amount" id="eAmt" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-3 mb-5">
+    <div class="grid grid-cols-2 gap-4"><button type="button" onclick="editDlg.close()" class="bg-brand text-brand-lime rounded-full py-3 text-lg">Batal</button><button class="bg-brand text-brand-lime rounded-full py-3 text-lg">Simpan</button></div>
+  </form>
+</dialog>
+
+<script>
+const paidMap = <%- JSON.stringify(paidMap) %>, KAS = <%= KAS %>;
+const boxes = [...document.querySelectorAll('.wk')];
+const tot = () => document.getElementById('tot').textContent = 'Rp.' + (boxes.filter(b => b.checked).length * KAS).toLocaleString('id-ID');
+document.getElementById('stu').addEventListener('change', e => {
+  const paid = paidMap[e.target.value] || [];
+  boxes.forEach(b => { b.checked = false; b.disabled = paid.includes(b.value); }); tot();
+});
+boxes.forEach(b => b.addEventListener('change', tot));
+function editIncome(b) { editForm.action = '/income/' + b.dataset.id + '/edit'; eDate.value = b.dataset.date; eAmt.value = b.dataset.amount; editDlg.showModal(); }
+</script>
+<%- include('partials/foot') %>

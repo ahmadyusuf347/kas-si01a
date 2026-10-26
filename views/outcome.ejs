@@ -1,0 +1,38 @@
+<%- include('partials/head') %>
+<main class="max-w-4xl mx-auto px-4 md:px-8">
+  <div class="flex items-center justify-between py-5"><h1 class="text-4xl font-medium">Outcome</h1>
+    <button onclick="openForm()" class="bg-brand text-brand-lime rounded-full px-6 py-3">Tambah <i class="bi bi-plus-lg ml-1"></i></button></div>
+  <section data-anim="card" class="bg-white rounded-[2rem] p-5 md:p-8">
+    <%- include('partials/filter', { ph: 'Cari keterangan' }) %>
+    <ul class="divide-y divide-gray-100">
+      <% rows.forEach(r => { %>
+      <li data-anim="row" class="flex items-center gap-3 py-3">
+        <span class="w-10 h-10 rounded-full bg-gray-300 grid place-items-center shrink-0"><i class="bi bi-arrow-up-right"></i></span>
+        <div class="min-w-0 flex-1"><div class="truncate"><%= r.description %></div><div class="text-xs text-brand-mid"><%= fmtDate(r.spent_date) %></div></div>
+        <b class="whitespace-nowrap">- <%= rp(r.amount) %></b>
+        <button class="text-xl px-1" data-id="<%= r.id %>" data-desc="<%= r.description %>" data-date="<%= r.spent_date %>" data-amount="<%= r.amount %>" onclick="openForm(this)" aria-label="Edit"><i class="bi bi-pencil-square"></i></button>
+        <form method="post" action="/outcome/<%= r.id %>/delete" onsubmit="return confirm('Hapus pengeluaran ini?')"><button class="text-xl px-1" aria-label="Hapus"><i class="bi bi-trash3-fill"></i></button></form>
+      </li>
+      <% }) %>
+      <% if (!rows.length) { %><li class="py-8 text-center text-brand-mid">Belum ada data</li><% } %>
+    </ul>
+  </section>
+</main>
+<dialog id="dlg" class="w-full md:w-[30rem] m-auto">
+  <form method="post" id="frm" class="bg-white rounded-[2rem] p-6 md:p-8">
+    <div class="flex justify-between items-center mb-5"><h2 id="ttl" class="text-2xl font-bold">Tambah Pengeluaran</h2><button type="button" onclick="dlg.close()" class="text-3xl"><i class="bi bi-x-lg"></i></button></div>
+    <label class="block mb-1">Keterangan</label><input name="description" id="fDesc" required maxlength="200" class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-4 mb-4">
+    <label class="block mb-1">Nominal (Rp)</label><input type="number" min="1" name="amount" id="fAmt" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-4 mb-4">
+    <label class="block mb-1">Tanggal</label><input type="date" name="spent_date" id="fDate" required class="w-full bg-gray-100 border border-gray-200 rounded-3xl px-5 py-4 mb-6">
+    <div class="grid grid-cols-2 gap-4"><button type="button" onclick="dlg.close()" class="bg-brand text-brand-lime rounded-full py-4 text-xl">Batal</button><button class="bg-brand text-brand-lime rounded-full py-4 text-xl">Simpan</button></div>
+  </form>
+</dialog>
+<script>
+function openForm(b) {
+  frm.action = b ? '/outcome/' + b.dataset.id + '/edit' : '/outcome';
+  ttl.textContent = b ? 'Edit Pengeluaran' : 'Tambah Pengeluaran';
+  fDesc.value = b ? b.dataset.desc : ''; fAmt.value = b ? b.dataset.amount : ''; fDate.value = b ? b.dataset.date : '<%= today %>';
+  dlg.showModal();
+}
+</script>
+<%- include('partials/foot') %>

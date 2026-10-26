@@ -1,0 +1,53 @@
+<% if (user) { %>
+<nav class="xl:hidden fixed bottom-0 inset-x-0 bg-brand flex justify-around items-end pt-3 pb-3 z-20" id="bottomNav">
+  <% nav.forEach(n => { const on = active===n[0]; %>
+  <a href="<%= n[0] %>" class="flex flex-col items-center gap-0.5 text-xs w-20 <%= on ? 'font-bold text-brand-lime' : 'text-white/60' %>">
+    <i class="bi <%= on ? n[2] : n[3] %> text-3xl leading-none <%= on ? 'nav-active' : '' %>"></i><%= n[1] %>
+  </a>
+  <% }) %>
+</nav>
+<% } %>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(function () {
+  if (!window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const $ = s => document.querySelectorAll(s);
+  const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  tl.from('header', { y: -30, opacity: 0, duration: 0.5 })
+    .from('[data-anim="card"]', { y: 30, opacity: 0, duration: 0.6, stagger: 0.12 }, '-=0.2');
+  if ($('[data-anim="row"]').length) gsap.from('[data-anim="row"]', { y: 14, opacity: 0, duration: 0.4, stagger: { amount: 0.6 }, delay: 0.35, ease: 'power2.out', clearProps: 'all' });
+  if ($('[data-anim="bar-up"]').length) {
+    gsap.from('[data-anim="bar-up"]', { scaleY: 0, transformOrigin: 'bottom', duration: 0.8, stagger: 0.05, delay: 0.5, ease: 'back.out(1.4)' });
+    gsap.from('[data-anim="bar-down"]', { scaleY: 0, transformOrigin: 'top', duration: 0.8, stagger: 0.05, delay: 0.6, ease: 'back.out(1.4)' });
+  }
+  $('[data-count]').forEach(el => {
+    const end = parseInt(el.dataset.count, 10) || 0, o = { v: 0 };
+    gsap.to(o, { v: end, duration: 1.1, delay: 0.4, ease: 'power2.out',
+      onUpdate: () => (el.textContent = 'Rp. ' + Math.round(o.v).toLocaleString('id-ID')) });
+  });
+  if ($('#bottomNav').length) {
+    gsap.from('#bottomNav', { y: 80, duration: 0.5, ease: 'power3.out' });
+    gsap.fromTo('.nav-active', { scale: 0.5 }, { scale: 1, duration: 0.6, delay: 0.3, ease: 'back.out(2.5)' });
+  }
+  // tombol Login/Logout: panah keluar lewat pojok kanan-atas lalu masuk lagi dari kiri-bawah
+  $('.btn-arrow').forEach(btn => {
+    const ic = btn.querySelector('i'); let tl;
+    const play = () => {
+      if (tl && tl.isActive()) return;
+      tl = gsap.timeline()
+        .to(ic, { x: 24, y: -24, duration: 0.25, ease: 'power2.in' })
+        .set(ic, { x: -24, y: 24 })
+        .to(ic, { x: 0, y: 0, duration: 0.35, ease: 'power2.out' });
+    };
+    ['pointerenter', 'focus', 'touchstart'].forEach(ev => btn.addEventListener(ev, play, { passive: true }));
+  });
+  // animasi buka dialog/modal
+  const open = HTMLDialogElement.prototype.showModal;
+  HTMLDialogElement.prototype.showModal = function () {
+    open.call(this);
+    gsap.from(this.firstElementChild, { y: 40, scale: 0.94, opacity: 0, duration: 0.35, ease: 'power3.out' });
+  };
+})();
+</script>
+</body></html>

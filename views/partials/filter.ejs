@@ -1,0 +1,6 @@
+<form method="get" class="grid md:grid-cols-3 gap-3 mb-4">
+  <label class="flex items-center gap-3 bg-gray-100 border border-gray-200 rounded-full px-5 py-3"><i class="bi bi-search text-gray-400"></i><input name="name" value="<%= f.name %>" placeholder="<%= ph %>" class="bg-transparent outline-none w-full"></label>
+  <label class="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full px-5 py-3 text-sm">Dari <input type="date" name="from" value="<%= f.from %>" onchange="this.form.submit()" class="bg-transparent outline-none w-full"></label>
+  <label class="flex items-center gap-2 bg-gray-100 border border-gray-200 rounded-full px-5 py-3 text-sm">Sampai <input type="date" name="to" value="<%= f.to %>" onchange="this.form.submit()" class="bg-transparent outline-none w-full"></label>
+</form>
+<div class="bg-brand text-brand-lime rounded-full px-6 py-4 flex justify-between text-lg mb-4"><span>Total ditampilkan</span><b class="font-semibold" data-count="<%= total %>"><%= rpSpace(total) %></b></div>

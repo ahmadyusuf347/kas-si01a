@@ -1,0 +1,43 @@
+const router = require('express').Router();
+const bcrypt = require('bcryptjs');
+const { q } = require('../lib/db');
+const { sign, clear } = require('../lib/auth');
+const { periods, SHORT, enc } = require('../lib/util');
+
+router.get('/', async (req, res) => {
+  const year = parseInt(req.query.year) || new Date().getFullYear();
+  const [[tin], [tout], inM, outM, students, paidRows] = await Promise.all([
+    q('select coalesce(sum(amount),0)::int t from incomes'),
+    q('select coalesce(sum(amount),0)::int t from outcomes'),
+    q('select extract(month from paid_date)::int m, sum(amount)::int s from incomes where extract(year from paid_date)=$1 group by 1', [year]),
+    q('select extract(month from spent_date)::int m, sum(amount)::int s from outcomes where extract(year from spent_date)=$1 group by 1', [year]),
+    q('select id, nim, name from students order by nim'),
+    q('select student_id, period_year y, period_month m, week w from incomes'),
+  ]);
+  const a = {}, b = {};
+  inM.forEach(r => (a[r.m] = r.s)); outM.forEach(r => (b[r.m] = r.s));
+  const max = Math.max(1, ...Object.values(a), ...Object.values(b));
+  const chart = SHORT.map((s, i) => ({
+    short: s, inn: a[i + 1] || 0, out: b[i + 1] || 0,
+    hIn: Math.max(6, Math.round(((a[i + 1] || 0) / max) * 110)),
+    hOut: b[i + 1] ? Math.max(8, Math.round((b[i + 1] / max) * 70)) : 0,
+  }));
+  const paid = {};
+  paidRows.forEach(r => (paid[`${r.student_id}-${r.y}-${r.m}-${r.w}`] = 1));
+  res.render('dashboard', { title: 'Dashboard', active: '/', year, tin: tin.t, tout: tout.t, saldo: tin.t - tout.t, chart, students, paid, periods });
+});
+
+router.get('/login', (req, res) => (req.user ? res.redirect('/') : res.render('login', { title: 'Login' })));
+
+router.post('/login', async (req, res) => {
+  const email = (req.body.email || '').trim().toLowerCase();
+  const [user] = await q('select * from users where email=$1', [email]);
+  if (!user || !(await bcrypt.compare(req.body.password || '', user.password_hash)))
+    return res.redirect('/login?err=' + enc('Email atau password salah'));
+  sign(user, res);
+  res.redirect('/');
+});
+
+router.post('/logout', (req, res) => { clear(res); res.redirect('/'); });
+
+module.exports = router;

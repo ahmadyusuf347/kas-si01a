@@ -1,0 +1,41 @@
+<%- include('partials/head') %>
+<main class="max-w-5xl mx-auto px-4 md:px-8 space-y-5">
+  <h1 class="text-4xl font-medium pt-5">Profile</h1>
+
+  <section data-anim="card" class="bg-white rounded-[2rem] p-6 md:p-8">
+    <h2 class="text-xl font-bold mb-4">Export</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <a href="/export/excel" class="bg-brand text-brand-lime rounded-full py-4 text-center"><i class="bi bi-file-earmark-excel mr-2"></i>Excel</a>
+      <a href="/export/pdf" class="bg-brand text-brand-lime rounded-full py-4 text-center"><i class="bi bi-file-earmark-pdf mr-2"></i>PDF</a>
+    </div>
+  </section>
+
+  <section data-anim="card" class="bg-white rounded-[2rem] p-6 md:p-8">
+    <h2 class="text-xl font-bold mb-4">Ganti Password</h2>
+    <form method="post" action="/profile/password" class="grid md:grid-cols-4 gap-3">
+      <input type="password" name="old_password" required placeholder="Password lama" class="bg-gray-100 border border-gray-200 rounded-full px-5 py-3">
+      <input type="password" name="new_password" required minlength="8" placeholder="Password baru" class="bg-gray-100 border border-gray-200 rounded-full px-5 py-3">
+      <input type="password" name="confirm" required minlength="8" placeholder="Konfirmasi" class="bg-gray-100 border border-gray-200 rounded-full px-5 py-3">
+      <button class="bg-brand text-brand-lime rounded-full py-3">Simpan</button>
+    </form>
+  </section>
+
+  <section data-anim="card" class="bg-white rounded-[2rem] p-6 md:p-8">
+    <h2 class="text-xl font-bold mb-4">Mahasiswa (<%= students.length %>)</h2>
+    <form method="post" action="/profile/students" class="grid md:grid-cols-[1fr_2fr_auto] gap-3 mb-5">
+      <input name="nim" required inputmode="numeric" placeholder="NIM" class="bg-gray-100 border border-gray-200 rounded-full px-5 py-3">
+      <input name="name" required placeholder="Nama lengkap" class="bg-gray-100 border border-gray-200 rounded-full px-5 py-3">
+      <button class="bg-brand text-brand-lime rounded-full px-8 py-3">Tambah <i class="bi bi-plus-lg ml-1"></i></button>
+    </form>
+    <ul class="divide-y divide-gray-100">
+      <% students.forEach((s,i) => { %>
+      <li class="flex items-center gap-3 py-2.5">
+        <span class="w-6 text-brand-mid text-sm"><%= i+1 %></span>
+        <div class="flex-1 min-w-0"><div class="truncate"><%= s.name %></div><div class="text-xs text-brand-mid"><%= s.nim %></div></div>
+        <form method="post" action="/profile/students/<%= s.id %>/delete" onsubmit="return confirm('Hapus <%= s.name.replace(/'/g, "\\'") %>? Riwayat pembayarannya ikut terhapus.')"><button class="text-xl px-1" aria-label="Hapus"><i class="bi bi-trash3-fill"></i></button></form>
+      </li>
+      <% }) %>
+    </ul>
+  </section>
+</main>
+<%- include('partials/foot') %>
